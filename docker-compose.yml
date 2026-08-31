@@ -1,0 +1,34 @@
+#-------------------------------------------
+# [luke-modified - external db] InvoiceShelf MySQL/MariaDB docker-compose variant
+# Repo : https://github.com/InvoiceShelf/docker
+#-------------------------------------------
+
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: docker/development/frankenphp.dockerfile
+    tty: true
+    environment:
+      - SERVER_ROOT="/app/public"
+      - GIT_CONFIG_GLOBAL=/tmp/.gitconfig-host
+      - GIT_SSH_COMMAND=ssh -i /tmp/.ssh/id_ed25519-host -o UserKnownHostsFile=/tmp/.ssh/known_hosts-host -o IdentitiesOnly=yes
+    volumes:
+      - .:/app
+      - invoiceshelf_storage:/var/www/html/storage/
+      - invoiceshelf_modules:/var/www/html/Modules/
+    networks:
+      - apps
+      - internal-db
+    restart: unless-stopped
+
+networks:
+  apps:
+    external: true
+  internal-db:
+    external: true
+
+volumes:
+  invoiceshelf_mariadb:
+  invoiceshelf_storage:
+  invoiceshelf_modules:
