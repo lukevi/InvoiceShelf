@@ -12,6 +12,7 @@ use App\Domains\Receivables\Models\Payment;
 use App\Domains\Sales\Models\Estimate;
 use App\Domains\Sales\Models\Invoice;
 use App\Domains\Sales\Models\RecurringInvoice;
+use App\Domains\WorkLog\Models\WorkLog;
 use App\Platform\Mail\Models\EmailLog;
 use App\Support\SafeOrderBy;
 use Carbon\Carbon;
@@ -160,6 +161,14 @@ class Customer extends Authenticatable implements HasMedia
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class, 'customer_id');
+    }
+
+    /**
+     * Logged time billable to the contact.
+     */
+    public function workLogs(): HasMany
+    {
+        return $this->hasMany(WorkLog::class, 'customer_id');
     }
 
     /**

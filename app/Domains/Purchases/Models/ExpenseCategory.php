@@ -4,6 +4,7 @@ namespace App\Domains\Purchases\Models;
 
 use App\Domains\Accounts\Models\Company;
 use App\Domains\Accounts\Models\CompanySetting;
+use App\Domains\WorkLog\Models\WorkLog;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,6 +48,14 @@ class ExpenseCategory extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class, 'expense_category_id');
+    }
+
+    /**
+     * Work logs charged under this heading.
+     */
+    public function workLogs(): HasMany
+    {
+        return $this->hasMany(WorkLog::class, 'charge_category_id');
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Reporting\Http\Controllers\CustomerLineItemsReportController;
 use App\Domains\Reporting\Http\Controllers\CustomerSalesReportController;
 use App\Domains\Reporting\Http\Controllers\CustomerStatementReportController;
 use App\Domains\Reporting\Http\Controllers\ExpensesReportController;
@@ -9,6 +10,7 @@ use App\Domains\Reporting\Http\Controllers\TaxSummaryReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/customers/{customer}/statement', CustomerStatementReportController::class);
+Route::get('/customers/line-items', CustomerLineItemsReportController::class);
 
 // Each financial report is addressed by the hash of the company it covers.
 // The hash names the company and nothing more: the controllers still check

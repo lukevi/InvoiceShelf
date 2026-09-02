@@ -71,6 +71,10 @@ return [
             'options' => $mysqlSslCaAttribute !== null ? array_filter([
                 $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'skip_ssl' => env('DB_DUMP_SKIP_SSL', false),
+                'ssl_flag' => env('DB_DUMP_SSL_FLAG', 'skip-ssl'),
+            ],
         ],
 
         'mariadb' => [
@@ -91,6 +95,10 @@ return [
             'options' => $mysqlSslCaAttribute !== null ? array_filter([
                 $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'skip_ssl' => env('DB_DUMP_SKIP_SSL', false),
+                'ssl_flag' => env('DB_DUMP_SSL_FLAG', 'skip-ssl'),
+            ],
         ],
 
         'pgsql' => [

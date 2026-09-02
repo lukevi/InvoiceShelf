@@ -34,6 +34,7 @@ use App\Domains\Sales\Models\InvoiceItem;
 use App\Domains\Sales\Models\RecurringInvoice;
 use App\Domains\Taxation\Models\Tax;
 use App\Domains\Taxation\Models\TaxType;
+use App\Domains\WorkLog\Models\WorkLog;
 use App\Platform\Mail\Models\EmailLog;
 use App\Platform\Modules\Models\MarketplaceCredential;
 use App\Platform\Modules\Models\MarketplaceOperation;
@@ -103,6 +104,7 @@ final class ModelIdentityMap
             'unit' => Unit::class,
             'user' => User::class,
             'user_setting' => UserSetting::class,
+            'work_log' => WorkLog::class,
             'bouncer_ability' => Ability::class,
             'bouncer_role' => Role::class,
         ];

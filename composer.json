@@ -38,6 +38,7 @@
         "dedoc/scramble": "^0.13.27",
         "fakerphp/faker": "^1.23",
         "jasonmccreary/laravel-test-assertions": "^2.9",
+        "laravel/boost": "^2.7",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
