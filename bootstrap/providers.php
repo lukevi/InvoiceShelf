@@ -16,18 +16,13 @@ use App\Platform\Operations\OperationsServiceProvider;
 use App\Platform\Pdf\PdfServiceProvider;
 use App\Platform\Storage\StorageServiceProvider;
 use App\Providers\AppServiceProvider;
+use App\Providers\Filament\FilaPanelProvider;
 use App\Providers\RouteServiceProvider;
 use App\Providers\ScrambleServiceProvider;
 use App\Providers\ViewServiceProvider;
 use App\Support\Hashids\HashidsServiceProvider;
 
 return [
-    HashidsServiceProvider::class,
-    AppServiceProvider::class,
-    RouteServiceProvider::class,
-    StorageServiceProvider::class,
-    ViewServiceProvider::class,
-    PdfServiceProvider::class,
     AccountsServiceProvider::class,
     CatalogServiceProvider::class,
     ContactsServiceProvider::class,
@@ -35,11 +30,18 @@ return [
     MoneyServiceProvider::class,
     PurchasesServiceProvider::class,
     ReceivablesServiceProvider::class,
+    ReportingServiceProvider::class,
     SalesServiceProvider::class,
     TaxationServiceProvider::class,
-    ReportingServiceProvider::class,
     MailServiceProvider::class,
-    OperationsServiceProvider::class,
     ModuleServiceProvider::class,
+    OperationsServiceProvider::class,
+    PdfServiceProvider::class,
+    StorageServiceProvider::class,
+    AppServiceProvider::class,
+    FilaPanelProvider::class,
+    RouteServiceProvider::class,
     ScrambleServiceProvider::class,
+    ViewServiceProvider::class,
+    HashidsServiceProvider::class,
 ];

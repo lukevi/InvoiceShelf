@@ -5,6 +5,7 @@ namespace App\Domains\WorkLog\Models;
 use App\Domains\Accounts\Models\Company;
 use App\Domains\Contacts\Models\Customer;
 use App\Domains\Purchases\Models\ExpenseCategory;
+use App\Domains\Sales\Models\InvoiceItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ class WorkLog extends Model
         'charge_category_id',
         'description',
         'duration_hours',
+        'invoice_item_id',
         'company_id',
     ];
 
@@ -52,6 +54,22 @@ class WorkLog extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    /**
+     * The invoice line this entry was billed onto, once it has been.
+     */
+    public function invoiceItem(): BelongsTo
+    {
+        return $this->belongsTo(InvoiceItem::class);
+    }
+
+    /**
+     * Whether this time has been carried onto an invoice yet.
+     */
+    public function isBilled(): bool
+    {
+        return $this->invoice_item_id !== null;
     }
 
     /**

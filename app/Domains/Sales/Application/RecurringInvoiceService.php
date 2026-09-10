@@ -13,9 +13,26 @@ use App\Facades\Hashids;
 use App\Support\Hashids\HashidConnection;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RecurringInvoiceService
 {
+    /**
+     * Ceiling on how many invoices a single scheduler tick will mint, across
+     * every schedule together. Bounds the damage a stuck or misfiring
+     * scheduler can do in one run.
+     */
+    private const MAX_INVOICES_PER_RUN = 100;
+
+    /**
+     * Ceiling on how many invoices one schedule can catch up on in a single
+     * scheduler tick, so one long-overdue schedule cannot starve every other
+     * schedule out of MAX_INVOICES_PER_RUN.
+     */
+    private const MAX_INVOICES_PER_SCHEDULE = 10;
+
     public function __construct(
         private readonly DocumentItemService $documentItemService,
         private readonly InvoiceService $invoiceService,
@@ -114,9 +131,104 @@ class RecurringInvoiceService
         return true;
     }
 
+    /**
+     * Mint every invoice currently due across every active schedule.
+     *
+     * Callers (the scheduler command, in practice) may fire this more than
+     * once for the same due window — an overlapping run, a retried job, more
+     * than one app instance each running its own scheduler. Each schedule is
+     * re-read and row-locked immediately before it is judged due, so a
+     * concurrent caller sees the advanced `next_invoice_at` and skips it
+     * rather than minting a second invoice for the same occurrence.
+     */
+    public function generateDueInvoices(): int
+    {
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+
+        $dueIds = RecurringInvoice::where('status', RecurringInvoice::ACTIVE)
+            ->whereNotNull('next_invoice_at')
+            ->where('next_invoice_at', '<=', $now)
+            ->orderBy('next_invoice_at')
+            ->orderBy('id')
+            ->pluck('id');
+
+        $generated = 0;
+
+        // Sweep the due set in rounds instead of draining one schedule at a
+        // time, so a schedule with many overdue occurrences to catch up on
+        // cannot starve the others out of this run's budget.
+        for ($round = 0; $round < self::MAX_INVOICES_PER_SCHEDULE && $generated < self::MAX_INVOICES_PER_RUN; $round++) {
+            $progressed = false;
+
+            foreach ($dueIds as $id) {
+                if ($generated >= self::MAX_INVOICES_PER_RUN) {
+                    break 2;
+                }
+
+                try {
+                    if ($this->generateDueInvoice((int) $id)) {
+                        $generated++;
+                        $progressed = true;
+                    }
+                } catch (Throwable $exception) {
+                    Log::error('Unable to generate recurring invoice.', [
+                        'recurring_invoice_id' => $id,
+                        'exception' => $exception,
+                    ]);
+                }
+            }
+
+            if (! $progressed) {
+                break;
+            }
+        }
+
+        return $generated;
+    }
+
+    /**
+     * Row-lock, re-check, and generate a single schedule's due invoice.
+     *
+     * The whole check-then-act sequence runs inside the row lock so two
+     * concurrent callers can never both see the schedule as due.
+     */
+    private function generateDueInvoice(int $recurringInvoiceId): bool
+    {
+        return DB::transaction(function () use ($recurringInvoiceId) {
+            $recurringInvoice = RecurringInvoice::query()
+                ->whereKey($recurringInvoiceId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $recurringInvoice || ! $this->isDue($recurringInvoice)) {
+                return false;
+            }
+
+            $this->generateInvoice($recurringInvoice);
+
+            return true;
+        });
+    }
+
+    private function isDue(RecurringInvoice $recurringInvoice): bool
+    {
+        return $recurringInvoice->status === RecurringInvoice::ACTIVE
+            && $recurringInvoice->next_invoice_at
+            && Carbon::now()->greaterThanOrEqualTo($recurringInvoice->next_invoice_at);
+    }
+
     public function generateInvoice(RecurringInvoice $recurringInvoice): void
     {
         if (Carbon::now()->lessThan($recurringInvoice->starts_at)) {
+            return;
+        }
+
+        // A schedule with no next-due date yet, or whose next-due date has not
+        // arrived, mints nothing. Without this guard any repeated call —
+        // an overlapping scheduler tick, a retry, more than one app instance —
+        // would mint another invoice unconditionally.
+        if (! $recurringInvoice->next_invoice_at
+            || Carbon::now()->lessThan($recurringInvoice->next_invoice_at)) {
             return;
         }
 

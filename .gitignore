@@ -36,6 +36,12 @@ yarn.lock
 /.github/copilot-instructions.md
 /.cursor/
 /.claude/
+/.github/skills/
+
+# Filament panel assets, published locally via `php artisan filament:assets`.
+/public/css/filament
+/public/fonts/filament
+/public/js/filament
 
 # Generated IDE metadata belongs to each developer's local environment.
 /.phpstorm.meta.php

@@ -319,10 +319,17 @@ class RecurringInvoice extends Model
 
     /**
      * Recompute and store the date the next invoice falls due.
+     *
+     * Advances from the occurrence that was just fulfilled — the schedule's own
+     * `next_invoice_at` — rather than from the fixed `starts_at`. Recomputing
+     * from `starts_at` every time would return the same date forever, since
+     * that column never changes, leaving the schedule permanently "due" and
+     * generating a fresh invoice on every scheduler tick.
      */
     public function updateNextInvoiceDate(): void
     {
-        $this->next_invoice_at = self::getNextInvoiceDate($this->frequency, $this->starts_at);
+        $reference = $this->next_invoice_at ?: $this->starts_at;
+        $this->next_invoice_at = self::getNextInvoiceDate($this->frequency, $reference);
         $this->save();
     }
 

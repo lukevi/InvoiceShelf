@@ -223,11 +223,11 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => 'your@example.com',
+            'to' => 'luke@island-online.com',
 
             'from' => [
-                'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-                'name' => env('MAIL_FROM_NAME', 'Example'),
+                'address' => env('MAIL_FROM_ADDRESS', 'luke@island-online.com'),
+                'name' => env('MAIL_FROM_NAME', 'Luke @IOL'),
             ],
         ],
 

@@ -23,8 +23,8 @@ RUN apt-get update \
 	sqlite3 \
 	nodejs \
 	npm \
-	chromium \
-	ghostscript \
+	#chromium \
+	#ghostscript \
 	default-mysql-client \
 	&& rm -rf /var/lib/apt/lists/*
 

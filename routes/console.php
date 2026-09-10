@@ -1,8 +1,5 @@
 <?php
 
-use App\Domains\Accounts\Models\CompanySetting;
-use App\Domains\Sales\Application\RecurringInvoiceService;
-use App\Domains\Sales\Models\RecurringInvoice;
 use App\Platform\Operations\Installation\Application\InstallationState;
 use Illuminate\Support\Facades\Schedule;
 
@@ -31,12 +28,7 @@ if (InstallationState::isDbCreated()) {
         ->at('01:30')
         ->withoutOverlapping();
 
-    $recurringInvoices = RecurringInvoice::where('status', 'ACTIVE')->get();
-    foreach ($recurringInvoices as $recurringInvoice) {
-        $timeZone = CompanySetting::getSetting('time_zone', $recurringInvoice->company_id);
-
-        Schedule::call(function () use ($recurringInvoice) {
-            app(RecurringInvoiceService::class)->generateInvoice($recurringInvoice);
-        })->cron($recurringInvoice->frequency)->timezone($timeZone);
-    }
+    Schedule::command('recurring-invoices:generate')
+        ->everyMinute()
+        ->withoutOverlapping();
 }
